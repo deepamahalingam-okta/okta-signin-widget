@@ -12,8 +12,6 @@
 
 import Errors from 'util/Errors';
 import { emailVerifyCallback } from './emailVerifyCallback';
-import { interact } from './interact';
-import { introspect } from './introspect';
 import sessionStorageHelper from './sessionStorageHelper';
 import { getSavedTransactionMeta } from './transactionMeta';
 import { CONFIGURED_FLOW } from './constants';
@@ -27,7 +25,10 @@ const handleProxyIdxResponse = async (settings) => {
 };
 
 /* eslint max-depth: [2, 3] */
+// eslint-disable-next-line complexity, max-statements
 export async function startLoginFlow(settings) {
+  const authClient = settings.getAuthClient();
+
   // Return a preset response
   if (settings.get('proxyIdxResponse')) {
     return handleProxyIdxResponse(settings);
@@ -54,32 +55,33 @@ export async function startLoginFlow(settings) {
       }
     }
 
-    return interact(settings);
+    return authClient.idx.interact(settings);
   }
 
   // Use stateToken from session storage if exists
   // See more details at ./docs/use-session-token-prior-to-settings.png
   const stateHandleFromSession = sessionStorageHelper.getStateHandle();
   if (stateHandleFromSession) {
-    return introspect(settings, stateHandleFromSession)
-      .then((idxResp) => {
-        // 1. abandon the settings.stateHandle given session.stateHandle is still valid
-        settings.set('stateToken', stateHandleFromSession);
-        // 2. chain the idxResp to next handler
-        return idxResp;
-      })
-      .catch(() => {
-        // 1. remove session.stateHandle
-        sessionStorageHelper.removeStateHandle();
-        // 2. start the login again in order to introspect on settings.stateHandle
-        return startLoginFlow(settings);
+    try {
+      const idxResp = await authClient.idx.introspect({
+        stateHandle: stateHandleFromSession
       });
+      // 1. abandon the settings.stateHandle given session.stateHandle is still valid
+      settings.set('stateToken', stateHandleFromSession);
+      // 2. chain the idxResp to next handler
+      return idxResp;
+    } catch {
+      // 1. remove session.stateHandle
+      sessionStorageHelper.removeStateHandle();
+      // 2. start the login again in order to introspect on settings.stateHandle
+      return startLoginFlow(settings);
+    }
   }
 
   // Use stateToken from options
   const stateHandle = settings.get('stateToken');
   if (stateHandle) {
-    return introspect(settings, stateHandle);
+    return authClient.idx.introspect(settings, { stateHandle });
   }
 
   throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the ' +

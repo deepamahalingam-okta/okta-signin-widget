@@ -10,11 +10,16 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-import idx from '@okta/okta-idx-js';
+import config from 'config/config.json';
 
-export async function introspect(settings, stateHandle) {
-  const domain = settings.get('baseUrl');
-  const version = settings.get('apiVersion');
+export function configureClient(appState, settings) {
+  const authClient = settings.getAuthClient();
+  // Enrich the extended user agent
+  authClient._oktaUserAgent.addEnvironment(`okta-signin-widget-${config.version}`);
 
-  return idx.start({ domain, stateHandle, version });
+  // Add fingerprint header if applicable
+  const fingerprint = appState.get('deviceFingerprint');
+  if (fingerprint) {
+    authClient.http.setRequestHeader('X-Device-Fingerprint', fingerprint);
+  }
 }

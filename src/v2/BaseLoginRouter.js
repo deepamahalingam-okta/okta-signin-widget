@@ -29,7 +29,7 @@ import sessionStorageHelper from './client/sessionStorageHelper';
 import {
   startLoginFlow,
   interactionCodeFlow,
-  configIdxJsClient,
+  configureClient,
   handleConfiguredFlow
 } from './client';
 
@@ -84,7 +84,7 @@ export default Router.extend({
     // Hide until unitial render
     this.hide();
 
-    configIdxJsClient(this.appState);
+    configureClient(this.appState, this.settings);
     this.listenTo(this.appState, 'updateAppState', this.handleUpdateAppState);
     this.listenTo(this.appState, 'remediationError', this.handleIdxResponseFailure);
     this.listenTo(this.appState, 'restartLoginFlow', this.restartLoginFlow);

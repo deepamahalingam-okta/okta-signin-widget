@@ -12,9 +12,7 @@
 
 export * from './interactionCodeFlow';
 export * from './transactionMeta';
-export * from './interact';
-export * from './introspect';
 export * from './startLoginFlow';
-export * from './configIdxJsClient';
+export * from './configureClient';
 export * from './handleConfiguredFlow';
 export * from './constants';
