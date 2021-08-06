@@ -55,7 +55,8 @@ export async function startLoginFlow(settings) {
       }
     }
 
-    return authClient.idx.interact(settings);
+    const { interactionHandle } = await authClient.idx.interact();
+    return authClient.idx.introspect({ interactionHandle });
   }
 
   // Use stateToken from session storage if exists

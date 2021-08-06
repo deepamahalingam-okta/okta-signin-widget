@@ -16,6 +16,7 @@ import Logger from 'util/Logger';
 import Widget from 'widget/OktaSignIn';
 
 const url = 'https://foo.com';
+const issuer = `${url}/oauth2/default`;
 const itp = Expect.itp;
 
 describe('OktaSignIn v2 bootstrap', function() {
@@ -192,7 +193,7 @@ describe('OktaSignIn v2 bootstrap', function() {
     });
 
     describe('shows error when IDENTITY_ENGINE feature is not enabled', () => {
-      itp('shows translated error when i18n is available', () => {
+      itp('shows translated error when i18n is available', async () => {
         const view = new TerminalView($sandbox);
         const testStr = 'This is a test string';
         setupLoginFlow({
@@ -208,12 +209,12 @@ describe('OktaSignIn v2 bootstrap', function() {
         }, [
           errorFeatureNotEnabled
         ]);
+
         render();
-        return Expect.wait(() => {
+        await Expect.wait(() => {
           return $('.siw-main-view.terminal').length === 1;
-        }).then(function() {
-          expect(view.getErrorMessages()).toBe(testStr);
         });
+        expect(view.getErrorMessages()).toBe(testStr);
       });
       itp('shows untranslated error when i18n is not available', () => {
         const view = new TerminalView($sandbox);
@@ -252,7 +253,16 @@ describe('OktaSignIn v2 bootstrap', function() {
           codeChallenge,
           codeVerifier,
           codeChallengeMethod,
-          interactionHandle
+          interactionHandle,
+          issuer,
+          urls: {
+            authorizeUrl: `${issuer}/v1/authorize`,
+            issuer,
+            logoutUrl: `${issuer}/v1/logout`,
+            revokeUrl: `${issuer}/v1/revoke`,
+            tokenUrl: `${issuer}/v1/token`,
+            userinfoUrl: `${issuer}/v1/userinfo`,
+          }
         });
       });
     });
@@ -276,7 +286,8 @@ describe('OktaSignIn v2 bootstrap', function() {
 
         // Needed for isTransactionMetaValid
         clientId,
-        redirectUri
+        redirectUri,
+        issuer
       });
       render();
 
@@ -292,14 +303,6 @@ describe('OktaSignIn v2 bootstrap', function() {
         expect(firstReq.data()).toEqual({ interactionHandle: savedInteractionHandle });
 
         expect(signIn.authClient.transactionManager.load).toHaveBeenCalled();
-        expect(signIn.authClient.transactionManager.save).toHaveBeenCalledWith({
-          codeChallenge,
-          codeVerifier,
-          codeChallengeMethod,
-          interactionHandle: savedInteractionHandle,
-          clientId,
-          redirectUri
-        });
       });
     });
 
@@ -316,7 +319,8 @@ describe('OktaSignIn v2 bootstrap', function() {
           codeChallenge,
           codeChallengeMethod,
           clientId,
-          redirectUri
+          redirectUri,
+          issuer
         };
       });
 

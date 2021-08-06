@@ -27,21 +27,35 @@ describe('v2/client/startLoginFlow', () => {
   let testContext;
 
   beforeEach(() => {
-    testContext = {};
-    jest.spyOn(mocked.interact, 'interact')
-      .mockResolvedValue('fake interact response');
-    jest.spyOn(mocked.introspect, 'introspect')
-      .mockResolvedValueOnce('first introspect response');
     jest.spyOn(mocked.emailVerifyCallback, 'emailVerifyCallback')
       .mockResolvedValue('fake emailVerifyCallback response');
-
-    testContext.settings = new Settings({
+    const interact = jest.fn().mockResolvedValue({
+      interactionHandle: 'fake_interaction_handle'
+    });
+    const introspect = jest.fn().mockResolvedValue({
+      fake: 'first introspect response'
+    });
+    const settings = new Settings({
       baseUrl: 'localhost:1234',
       stateToken: 'a test state token from settings',
     });
+    const authClient = {
+      idx: {
+        interact,
+        introspect
+      }
+    };
+    settings.authClient = authClient;
+    testContext = {
+      interact,
+      introspect,
+      authClient,
+      settings
+    };
   });
 
   it('shall use "proxyIdxResponse" if exists', async () => {
+    const { settings, interact, introspect } = testContext;
     const proxyIdxResponse = {
       'messages': {
         'type': 'array',
@@ -56,15 +70,15 @@ describe('v2/client/startLoginFlow', () => {
         ]
       }
     };
-    testContext.settings.set({ proxyIdxResponse });
-    const result = await startLoginFlow(testContext.settings);
+    settings.set({ proxyIdxResponse });
+    const result = await startLoginFlow(settings);
     expect(result).toEqual({
       rawIdxState: proxyIdxResponse,
       context: proxyIdxResponse,
       neededToProceed: [],
     });
-    expect(mocked.interact.interact).not.toHaveBeenCalled();
-    expect(mocked.introspect.introspect).not.toHaveBeenCalled();
+    expect(interact).not.toHaveBeenCalled();
+    expect(introspect).not.toHaveBeenCalled();
   });
 
   it('shall do email verify callback when "stateTokenExternalId" is defined', async () => {
@@ -80,91 +94,106 @@ describe('v2/client/startLoginFlow', () => {
     expect(mocked.interact.interact).not.toHaveBeenCalled();
   });
 
-  it('shall run interation flow when "useInteractionCodeFlow" is on', async () => {
-    testContext.settings.set('useInteractionCodeFlow', true);
-    const result = await startLoginFlow(testContext.settings);
-    expect(result).toEqual('fake interact response');
+  it('shall run interaction flow when "useInteractionCodeFlow" is on', async () => {
+    const { settings, interact, introspect } = testContext;
+    settings.set('useInteractionCodeFlow', true);
+    const result = await startLoginFlow(settings);
+    expect(result).toEqual({
+      fake: 'first introspect response'
+    });
 
-    expect(mocked.interact.interact).toHaveBeenCalledWith(testContext.settings);
-    expect(mocked.interact.interact).toHaveBeenCalledTimes(1);
-    expect(mocked.introspect.introspect).not.toHaveBeenCalled();
-    expect(mocked.emailVerifyCallback.emailVerifyCallback).not.toHaveBeenCalled();
+    expect(interact).toHaveBeenCalledTimes(1);
+    expect(introspect).toHaveBeenCalledWith({
+      interactionHandle:'fake_interaction_handle'
+    });
   });
 
   it('shall introspect on "settings.stateToken"', async () => {
-    const result = await startLoginFlow(testContext.settings);
-    expect(result).toEqual('first introspect response');
+    const { settings, interact, introspect } = testContext;
+    const result = await startLoginFlow(settings);
+    expect(result).toEqual({
+      fake: 'first introspect response'
+    });
 
-    expect(mocked.interact.interact).not.toHaveBeenCalled();
-    expect(mocked.emailVerifyCallback.emailVerifyCallback).not.toHaveBeenCalled();
-    expect(mocked.introspect.introspect).toHaveBeenCalledTimes(1);
-    expect(mocked.introspect.introspect).toHaveBeenCalledWith(
-      testContext.settings,
-      'a test state token from settings',
-    );
-    expect(testContext.settings.get('stateToken')).toBe('a test state token from settings');
+    expect(interact).not.toHaveBeenCalled();
+    expect(introspect).toHaveBeenCalledTimes(1);
+    expect(introspect).toHaveBeenCalledWith({
+      stateHandle: 'a test state token from settings',
+    });
+    expect(settings.get('stateToken')).toBe('a test state token from settings');
   });
 
   it('shall introspect on "settings.stateToken" when overrideExistingStateToken is true', async () => {
+    const { settings, interact, introspect } = testContext;
     sessionStorageHelper.setStateHandle('fake state handle from session storage');
-    testContext.settings.set('overrideExistingStateToken', 'true');
-    const result = await startLoginFlow(testContext.settings);
-    expect(result).toEqual('first introspect response');
+    settings.set('overrideExistingStateToken', 'true');
+    const result = await startLoginFlow(settings);
+    expect(result).toEqual({
+      fake: 'first introspect response'
+    });
 
-    expect(mocked.interact.interact).not.toHaveBeenCalled();
-    expect(mocked.emailVerifyCallback.emailVerifyCallback).not.toHaveBeenCalled();
-    expect(mocked.introspect.introspect).toHaveBeenCalledTimes(1);
-    expect(mocked.introspect.introspect).toHaveBeenCalledWith(
-      testContext.settings,
-      'a test state token from settings',
-    );
-    expect(testContext.settings.get('stateToken')).toBe('a test state token from settings');
+    expect(interact).not.toHaveBeenCalled();
+    expect(introspect).toHaveBeenCalledTimes(1);
+    expect(introspect).toHaveBeenCalledWith({
+      stateHandle: 'a test state token from settings',
+    });
+    expect(settings.get('stateToken')).toBe('a test state token from settings');
   });
 
   it('shall introspect on "sessionStorage.stateToken"', async () => {
+    const { settings, interact, introspect } = testContext;
     sessionStorageHelper.setStateHandle('fake state handle from session storage');
-    const result = await startLoginFlow(testContext.settings);
-    expect(result).toEqual('first introspect response');
+    const result = await startLoginFlow(settings);
+    expect(result).toEqual({
+      fake: 'first introspect response'
+    });
 
-    expect(mocked.interact.interact).not.toHaveBeenCalled();
-    expect(mocked.emailVerifyCallback.emailVerifyCallback).not.toHaveBeenCalled();
-    expect(mocked.introspect.introspect).toHaveBeenCalledTimes(1);
-    expect(mocked.introspect.introspect).toHaveBeenCalledWith(
-      testContext.settings,
-      'fake state handle from session storage',
-    );
-    expect(testContext.settings.get('stateToken'))
+    expect(interact).not.toHaveBeenCalled();
+    expect(introspect).toHaveBeenCalledTimes(1);
+    expect(introspect).toHaveBeenCalledWith({
+      stateHandle: 'fake state handle from session storage',
+    });
+    expect(settings.get('stateToken'))
       .toBe('fake state handle from session storage');
   });
 
   it('shall introspect on "settings.stateToken" when "sessionStorage.stateToken" is invalid', async () => {
-    mocked.introspect.introspect.mockReset();
-    jest.spyOn(mocked.introspect, 'introspect')
-      .mockRejectedValueOnce('ERROR - introspect response')
-      .mockResolvedValueOnce('another introspect response');
+    const { settings, interact, introspect } = testContext;
+    introspect.mockReset();
+    introspect
+      .mockRejectedValueOnce({
+        fake: 'ERROR - introspect response'
+      })
+      .mockResolvedValueOnce({
+        fake: 'another introspect response'
+      });
 
     sessionStorageHelper.setStateHandle('fake state handle from session storage');
-    const result = await startLoginFlow(testContext.settings);
-    expect(result).toEqual('another introspect response');
+    const result = await startLoginFlow(settings);
+    expect(result).toEqual({
+      fake: 'another introspect response'
+    });
 
-    expect(mocked.interact.interact).not.toHaveBeenCalled();
-    expect(mocked.emailVerifyCallback.emailVerifyCallback).not.toHaveBeenCalled();
-    expect(mocked.introspect.introspect).toHaveBeenCalledTimes(2);
-    expect(mocked.introspect.introspect.mock.calls[0][0]).toBe(testContext.settings);
-    expect(mocked.introspect.introspect.mock.calls[0][1])
-      .toBe('fake state handle from session storage');
-    expect(mocked.introspect.introspect.mock.calls[1][0]).toBe(testContext.settings);
-    expect(mocked.introspect.introspect.mock.calls[1][1])
-      .toBe('a test state token from settings');
+    expect(interact).not.toHaveBeenCalled();
+    expect(introspect).toHaveBeenCalledTimes(2);
+    expect(introspect.mock.calls[0][0])
+      .toEqual({
+        stateHandle: 'fake state handle from session storage'
+      });
+    expect(introspect.mock.calls[1][0])
+      .toEqual({
+        stateHandle: 'a test state token from settings'
+      });
 
-    expect(testContext.settings.get('stateToken')).toBe('a test state token from settings');
+    expect(settings.get('stateToken')).toBe('a test state token from settings');
   });
 
   it('shall throw error when no valid config', async () => {
-    testContext.settings.unset('stateToken');
+    const { settings } = testContext;
+    settings.unset('stateToken');
 
     try {
-      await startLoginFlow(testContext.settings);
+      await startLoginFlow(settings);
       expect(false).toBe(true);
     } catch (e) {
       expect(e.name).toBe('CONFIG_ERROR');

@@ -234,7 +234,7 @@ export default Router.extend({
         /* eslint-enable max-depth */
         this.appState.trigger('updateAppState', idxResp);
       } catch (errorResp) {
-        this.appState.trigger('remediationError', errorResp.error || errorResp);
+        this.appState.trigger('remediationError', errorResp);
       } finally {
         this.settings.unset('stateToken');
         this.settings.unset('proxyIdxResponse');
