@@ -81,7 +81,7 @@ export async function startLoginFlow(settings) {
   // Use stateToken from options
   const stateHandle = settings.get('stateToken');
   if (stateHandle) {
-    return authClient.idx.introspect(settings, { stateHandle });
+    return authClient.idx.introspect({ stateHandle });
   }
 
   throw new Errors.ConfigError('Set "useInteractionCodeFlow" to true in configuration to enable the ' +
