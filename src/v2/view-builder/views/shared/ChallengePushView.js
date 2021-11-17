@@ -1,7 +1,7 @@
 // Common view for OV push and custom push.
 import { loc, createButton, View } from 'okta';
 import hbs from 'handlebars-inline-precompile';
-import { BaseForm } from '../../internals';
+import { BaseFormWithPolling } from '../../internals';
 import polling from '../shared/polling';
 import { WARNING_TIMEOUT } from '../../utils/Constants';
 import BaseAuthenticatorView from '../../components/BaseAuthenticatorView';
@@ -14,7 +14,7 @@ const warningTemplate = View.extend({
     <p>{{warning}}</p>
   `
 });
-const Body = BaseForm.extend(Object.assign(
+const Body = BaseFormWithPolling.extend(Object.assign(
   {
     noButtonBar: true,
 
@@ -24,7 +24,7 @@ const Body = BaseForm.extend(Object.assign(
     },
 
     initialize() {
-      BaseForm.prototype.initialize.apply(this, arguments);
+      BaseFormWithPolling.prototype.initialize.apply(this, arguments);
       this.listenTo(this.model, 'error', this.stopPoll);
       this.addView();
     },
@@ -77,7 +77,7 @@ const Body = BaseForm.extend(Object.assign(
     },
 
     remove() {
-      BaseForm.prototype.remove.apply(this, arguments);
+      BaseFormWithPolling.prototype.remove.apply(this, arguments);
       this.stopPolling();
     },
 
