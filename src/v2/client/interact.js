@@ -15,6 +15,7 @@
 // responsible for adding new routes)
 
 import idx from '@okta/okta-idx-js';
+import Errors from '../../util/Errors';
 
 import { getTransactionMeta, saveTransactionMeta } from './transactionMeta';
 
@@ -64,5 +65,9 @@ export async function interact(settings) {
 
       // return idx response
       return response;
+    })
+    .catch(err => {
+      const { error, error_description } = err;
+      throw new Errors.IdxInteractError(error_description, error);
     });
 }

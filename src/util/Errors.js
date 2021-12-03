@@ -70,6 +70,13 @@ function ConfiguredFlowError(message, flowSetting) {
 }
 ConfiguredFlowError.prototype = new Error();
 
+function IdxInteractError(message, type) {
+  this.message = message;
+  this.name = Enums.IDX_INTERACT_ERROR;
+  this.type = type;
+}
+IdxInteractError.prototype = new Error();
+
 export default {
   ConfigError: ConfigError,
   UnsupportedBrowserError: UnsupportedBrowserError,
@@ -80,4 +87,5 @@ export default {
   WebAuthnError: WebAuthnError,
   WebauthnAbortError: WebauthnAbortError,
   ConfiguredFlowError: ConfiguredFlowError,
+  IdxInteractError: IdxInteractError,
 };

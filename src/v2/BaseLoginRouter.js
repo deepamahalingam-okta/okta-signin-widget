@@ -135,6 +135,31 @@ export default Router.extend({
   },
 
   handleIdxResponseFailure(error = {}) {
+    if (error instanceof Errors.IdxInteractError) {
+      // simulate an IDX error response
+      const idxMessages = {
+        messages: {
+          type: 'array',
+          value: [
+            {
+              // TODO: use a different string?
+              message: loc('u2f.error.other.oneFactor', 'login'),
+              class: 'ERROR'
+            }
+          ],
+        },
+      };
+
+      // Format the error to resemble an IdX error
+      error = Object.assign({
+        details: {
+          rawIdxState: idxMessages,
+          context: idxMessages,
+          neededToProceed: [],
+        }
+      }, error);
+    }
+
     // special case: `useInteractionCodeFlow` is true but the Org does not have OIE enabled
     // The response is not in IDX format. See playground/mocks/data/oauth2/error-feature-not-enabled.json
     if (error?.error === 'access_denied' && error.error_description) {
