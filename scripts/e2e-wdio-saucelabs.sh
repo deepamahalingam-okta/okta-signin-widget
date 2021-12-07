@@ -13,8 +13,6 @@ export CI=true
 dd
 export TEST_SUITE_TYPE="junit"
 export TEST_RESULT_FILE_DIR="${REPO}/build2/reports/e2e-saucelabs"
-echo $TEST_SUITE_TYPE > $TEST_SUITE_TYPE_FILE
-echo $TEST_RESULT_FILE_DIR > $TEST_RESULT_FILE_DIR_FILE
 
 # This file contains all the env vars we need for e2e tests
 aws s3 --quiet --region us-east-1 cp s3://ci-secret-stash/prod/signinwidget/export-test-credentials.sh $OKTA_HOME/$REPO/scripts/export-test-credentials.sh
@@ -29,7 +27,9 @@ export ORG_OIE_ENABLED=true
 
 if ! yarn test:e2e:wdio; then
   echo "e2e wdio tests failed! Exiting..."
-  exit ${PUBLISH_TYPE_AND_RESULT_DIR_BUT_ALWAYS_FAIL}
+  exit ${TEST_FAILURE}
 fi
 
-exit ${PUBLISH_TYPE_AND_RESULT_DIR};
+echo ${TEST_SUITE_TYPE} > ${TEST_SUITE_TYPE_FILE}
+echo ${TEST_RESULT_FILE_DIR} > ${TEST_RESULT_FILE_DIR_FILE}
+exit ${PUBLISH_TYPE_AND_RESULT_DIR}
