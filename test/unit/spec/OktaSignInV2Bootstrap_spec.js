@@ -24,6 +24,7 @@ describe('OktaSignIn v2 bootstrap', function() {
   let codeVerifier;
   let codeChallenge;
   let codeChallengeMethod;
+  let withCredentials;
 
   beforeEach(function() {
     jest.spyOn(Logger, 'error').mockImplementation(() => { });
@@ -31,11 +32,15 @@ describe('OktaSignIn v2 bootstrap', function() {
     codeVerifier = 'fakecodeVerifier';
     codeChallenge = 'fakecodeChallenge';
     codeChallengeMethod = 'fakecodeChallengeMethod';
+    withCredentials = true;
   });
 
   afterEach(function() {
     sessionStorage.clear();
-    signIn && signIn.remove();
+    if (signIn) {
+      signIn.authClient.transactionManager.clear();
+      signIn.remove();
+    }
   });
 
   function setupLoginFlow(widgetOptions, responses) {
@@ -98,7 +103,7 @@ describe('OktaSignIn v2 bootstrap', function() {
   }
 
   describe('Introspects token and loads Identifier view for new pipeline', function() {
-    itp('calls introspect API on page load using idx-js as client', function() {
+    itp('calls introspect API on page load', function() {
       const form = new IdentifierForm($sandbox);
       setupLoginFlow({ stateToken: '02stateToken' }, idxResponse);
       render();
@@ -119,7 +124,7 @@ describe('OktaSignIn v2 bootstrap', function() {
       });
     });
 
-    itp('throws an error if invalid version is passed to idx-js', function() {
+    itp('throws an error if invalid version is passed', function() {
       setupLoginFlow({
         stateToken: '02stateToken',
         apiVersion: '2.0.0'
@@ -150,7 +155,7 @@ describe('OktaSignIn v2 bootstrap', function() {
       ];
     });
 
-    itp('calls interact API on page load using idx-js as client in custom hosted widget', function() {
+    itp('calls interact API on page load in custom hosted widget', function() {
       const form = new IdentifierForm($sandbox);
       setupLoginFlow({
         clientId: 'someClientId',
@@ -250,6 +255,7 @@ describe('OktaSignIn v2 bootstrap', function() {
         return $('.siw-main-body').length === 1;
       }).then(function() {
         expect(signIn.authClient.transactionManager.save).toHaveBeenCalledWith({
+          flow: 'default',
           codeChallenge,
           codeVerifier,
           codeChallengeMethod,
@@ -262,8 +268,9 @@ describe('OktaSignIn v2 bootstrap', function() {
             revokeUrl: `${issuer}/v1/revoke`,
             tokenUrl: `${issuer}/v1/token`,
             userinfoUrl: `${issuer}/v1/userinfo`,
-          }
-        });
+          },
+          withCredentials
+        }, { muteWarning: true });
       });
     });
 
@@ -351,7 +358,7 @@ describe('OktaSignIn v2 bootstrap', function() {
         });
       });
 
-      itp('does NOT clear on permanent error', () => {
+      itp('does NOT clear shared storage on permanent error', () => {
         setupLoginFlow({
           clientId,
           redirectUri,
@@ -366,7 +373,7 @@ describe('OktaSignIn v2 bootstrap', function() {
         return Expect.wait(() => {
           return $('.siw-main-body').length === 1;
         }).then(function() {
-          expect(signIn.authClient.transactionManager.clear).not.toHaveBeenCalled();
+          expect(signIn.authClient.transactionManager.clear).toHaveBeenCalledWith({ clearSharedStorage: false });
         });
       });
 

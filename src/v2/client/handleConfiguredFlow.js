@@ -17,13 +17,6 @@
 // and will default to the original idx response otherwise. This depends on the Org configurations
 import Errors from 'util/Errors';
 import Logger from 'util/Logger';
-import { interact } from './interact';
-import {
-  getTransactionMeta,
-  getSavedTransactionMeta,
-  saveTransactionMeta,
-  clearTransactionMeta,
-} from './transactionMeta';
 import { FORMS } from '../ion/RemediationConstants';
 import { CONFIGURED_FLOW } from './constants';
 
@@ -85,6 +78,7 @@ async function stepIntoSpecificIdxFlow(idxState, flow='') {
 // if they do not match, abandon the current (meta) flow and start a new (configured) flow
 export async function handleConfiguredFlow(originalResp, settings) {
   const configuredFlow = settings.get('flow');
+  const authClient = settings.getAuthClient();
 
   if (!configuredFlow || configuredFlow === CONFIGURED_FLOW.DEFAULT || configuredFlow === CONFIGURED_FLOW.PROCEED) {
     return originalResp;
@@ -92,13 +86,16 @@ export async function handleConfiguredFlow(originalResp, settings) {
 
   let idxState = originalResp;
 
-  const meta = await getTransactionMeta(settings);
+  const meta = await authClient.getTransactionMeta();
 
   if (meta.flow && meta.flow !== configuredFlow) {
     // configured flow and active flow do not match, abandon active flow, start new (configured) flow
     Logger.warn(`Canceling current '${meta.flow}' flow to start '${configuredFlow}' flow`);
-    clearTransactionMeta(settings);
-    idxState = await interact(settings);
+    
+    idxState = await authClient.idx.start({ flow: configuredFlow });
+    if (idxState.error) {
+      throw idxState.error;
+    }
   }
 
   // attempts to step into the desired flow
@@ -106,9 +103,9 @@ export async function handleConfiguredFlow(originalResp, settings) {
 
   // meta could have been mutated since the first `getTransactionMeta` call in this function
   // retrieve again before writing to the transaction, otherwise the n-1 idx call is saved
-  const currMeta = await getSavedTransactionMeta(settings);
+  const currMeta = await authClient.idx.getSavedTransactionMeta();
   const newMeta = Object.assign({}, {...currMeta}, {flow: configuredFlow});
-  saveTransactionMeta(settings, newMeta);
+  authClient.saveTransactionMeta(newMeta);
 
   return idxState;
 }

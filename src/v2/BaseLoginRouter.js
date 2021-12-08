@@ -201,7 +201,7 @@ export default Router.extend({
     // }
   },
 
-  /* eslint max-statements: [2, 25], complexity: [2, 11] */
+  /* eslint max-statements: [2, 27], complexity: [2, 11] */
   render: async function(Controller, options = {}) {
     // If url changes then widget assumes that user's intention was to initiate a new login flow,
     // so clear stored token to use the latest token.
@@ -227,6 +227,10 @@ export default Router.extend({
     if (this.settings.get('oieEnabled')) {
       try {
         let idxResp = await startLoginFlow(this.settings);
+        // eslint-disable-next-line max-depth
+        if (idxResp.error) {
+          throw idxResp.error;
+        }
         /* eslint-disable max-depth */
         if (this.settings.get('flow') && !this.hasControllerRendered) {
           idxResp = await handleConfiguredFlow(idxResp, this.settings);

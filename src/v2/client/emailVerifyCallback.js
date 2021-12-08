@@ -1,8 +1,8 @@
-import { getSavedTransactionMeta } from './transactionMeta';
+
 
 export async function emailVerifyCallback(settings) {
   const authClient = settings.getAuthClient();
-  const meta = await getSavedTransactionMeta(settings);
+  const meta = await authClient.idx.getSavedTransactionMeta();
   const interactionHandle = meta?.interactionHandle;
   const stateTokenExternalId = settings.get('stateTokenExternalId');
 
