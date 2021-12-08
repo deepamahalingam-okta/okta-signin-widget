@@ -1,3 +1,5 @@
+import {protractor} from "protractor";
+
 export const waitForLoad = async (element) => {
     const currentBrowser = browser.capabilities.browserName;
     if( currentBrowser === 'Internet Explorer 11' ||
