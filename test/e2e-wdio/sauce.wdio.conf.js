@@ -176,8 +176,7 @@ exports.config = {
             sauceConnectOpts: {
                 tunnelIdentifier: 'SIW-e2e-tunnel'
             }
-        }],
-        'iedriver'
+        }]
     ],
 
     // Framework you want to run your specs with.
