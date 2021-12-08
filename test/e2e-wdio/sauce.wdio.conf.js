@@ -5,6 +5,7 @@ require('@babel/register'); // Allows use of import module syntax
 require('regenerator-runtime'); // Allows use of async/await
 
 const logLevel = 'warn';
+const defaultTimeoutInterval = DEBUG ? (24 * 60 * 60 * 1000) : 10000;
 const browserOptions = {
     args: []
 };
