@@ -71,13 +71,12 @@ exports.config = {
     // will be called from there.
     //
     specs: [
-       // path.resolve(__dirname, 'specs/**/*.e2e.js')
-        './specs/**/*.e2e.js'
+        path.resolve(__dirname, 'specs/**/*.e2e.js')
     ],
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
-        './specs/basic-dev.e2e.js', './specs/oidc.e2e.js'
+        path.resolve(__dirname,'./specs/basic-dev.e2e.js', './specs/oidc.e2e.js')
     ],
     //
     // ============
@@ -173,7 +172,7 @@ exports.config = {
     services: [
         ['sauce', {
             sauceConnect: true,
-            sauceConnectOpts: { noAutodetect: false,
+            sauceConnectOpts: {
                 tunnelIdentifier: 'SIW-e2e-tunnel'
             }
         }],
