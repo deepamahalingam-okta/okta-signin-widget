@@ -177,6 +177,7 @@ exports.config = {
                 tunnelIdentifier: 'SIW-e2e-tunnel'
             }
         }],
+        'iedriver'
     ],
 
     // Framework you want to run your specs with.
