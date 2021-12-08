@@ -74,7 +74,7 @@ exports.config = {
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
-       // 'specs/dev_spec.js', 'specs/npm_spec.js', 'specs/OIDC_spec.js'
+        'specs/basic-dev.e2e.js', 'specs/oidc.e2e.js'
     ],
     //
     // ============
@@ -102,15 +102,11 @@ exports.config = {
         // maxInstances can get overwritten per capability. So if you have an in-house Selenium
         // grid with only 5 firefox instances available you can make sure that not more than
         // 5 instances get started at a time.
-        {
-        maxInstances: 1, // all tests use the same user and local storage. they must run in series
-        browserName: 'chrome',
-        'goog:chromeOptions': browserOptions
+
         // If outputDir is provided WebdriverIO can capture driver session logs
         // it is possible to configure which logTypes to include/exclude.
         // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
         // excludeDriverLogs: ['bugreport', 'server'],
-        },
         {
             maxInstances: 1, // all tests use the same user and local storage. they must run in series
             browserName: 'internet explorer',
