@@ -63,6 +63,9 @@ export default Model.extend({
     logoText: ['string', false],
     helpSupportNumber: 'string',
 
+    // IDX API VERSION (May be removed in a future release)
+    apiVersion: ['string', true, '1.0.0'],
+
     // <OIE>
     // attribute to hold proxy (fake) idx response
     // to render static pages without initiating idx pipeline
