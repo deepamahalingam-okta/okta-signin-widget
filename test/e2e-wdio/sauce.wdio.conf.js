@@ -76,7 +76,8 @@ exports.config = {
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
-        path.resolve(__dirname,'./specs/basic-dev.e2e.js', './specs/oidc.e2e.js')
+        path.resolve(__dirname, './specs/basic-dev.e2e.js'),
+        path.resolve(__dirname, './specs/oidc.e2e.js')
     ],
     //
     // ============
@@ -156,7 +157,7 @@ exports.config = {
     baseUrl: 'http://localhost:3000',
     //
     // Default timeout for all waitFor* commands.
-    waitforTimeout: 30000,
+    waitforTimeout: 50000,
     //
     // Default timeout in milliseconds for request
     // if browser driver or grid doesn't send response
