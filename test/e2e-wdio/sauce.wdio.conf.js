@@ -1,8 +1,9 @@
 /* eslint-disable */
 const path = require('path');
 require('./env').config();
+require('@babel/register'); // Allows use of import module syntax
+require('regenerator-runtime'); // Allows use of async/await
 
-const CI = process.env.CI;
 const logLevel = 'warn';
 const browserOptions = {
     args: []
@@ -21,12 +22,11 @@ if (process.env.CI || process.env.CHROME_HEADLESS) {
     ]);
 }
 
-const CHROMEDRIVER_VERSION = process.env.CHROMEDRIVER_VERSION || '89.0.4389.23';
-const drivers = {
-    chrome: { version: CHROMEDRIVER_VERSION }
-};
-
 exports.config = {
+    jasmineNodeOpts: {
+        defaultTimeoutInterval,
+        stopSpecOnExpectationFailure: true
+    },
     //
     // ====================
     // Runner Configuration
