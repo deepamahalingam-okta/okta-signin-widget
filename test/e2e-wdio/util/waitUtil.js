@@ -1,5 +1,5 @@
 export const waitForLoad = async (element) => {
-  if(browser.capabilities.browser.localeCompare('internet explorer')){
+  if(browser.capabilities.browserName.localeCompare('internet explorer')){
     await new Promise(r => setTimeout(r, 5000));
     browser.isElementDisplayed(element);
   } else {
